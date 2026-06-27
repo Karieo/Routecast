@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Routecast — See the weather on your drive before you leave</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sky-dark:   #0a0f1e;
+      --sky-mid:    #0d1f3c;
+      --sky-blue:   #1a3a6e;
+      --horizon:    #e8440a;
+      --amber:      #f59e0b;
+      --sun:        #fbbf24;
+      --snow:       #e2eeff;
+      --text:       #f0f4ff;
+      --muted:      #8899bb;
+      --card-bg:    rgba(255,255,255,0.05);
+      --card-border:rgba(255,255,255,0.08);
+      --green:      #22c55e;
+      --yellow:     #eab308;
+      --orange:     #f97316;
+      --red:        #ef4444;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--sky-dark);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── SKY BACKGROUND ── */
+    .sky-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: 
+        radial-gradient(ellipse 120% 60% at 50% 0%, #1a3a6e44 0%, transparent 70%),
+        radial-gradient(ellipse 80% 40% at 80% 20%, #e8440a18 0%, transparent 60%),
+        radial-gradient(ellipse 60% 30% at 20% 80%, #1a3a6e22 0%, transparent 60%),
+        linear-gradient(180deg, #0a0f1e 0%, #0d1a2e 50%, #0a0f1e 100%);
+    }
+
+    .stars {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background-image: 
+        radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 25% 35%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 40% 8%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 60% 22%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 75% 12%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 88% 30%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 15% 55%, rgba(255,255,255,0.2) 0%, transparent 100%),
+        radial-gradient(1px 1px at 50% 45%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 92% 8%, rgba(255,255,255,0.7) 0%, transparent 100%),
+        radial-gradient(1px 1px at 33% 70%, rgba(255,255,255,0.2) 0%, transparent 100%);
+    }
+
+    /* ── LAYOUT ── */
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 48px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.3rem;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--horizon);
+      box-shadow: 0 0 12px var(--horizon);
+      animation: pulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.8); }
+    }
+
+    .nav-badge {
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--card-border);
+      padding: 5px 14px;
+      border-radius: 100px;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 80px 24px 60px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--horizon);
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: fadeUp 0.6s ease 0.1s forwards;
+    }
+
+    .hero-eyebrow::before,
+    .hero-eyebrow::after {
+      content: '';
+      display: block;
+      width: 28px;
+      height: 1px;
+      background: var(--horizon);
+      opacity: 0.6;
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      line-height: 1.0;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 12px;
+      opacity: 0;
+      animation: fadeUp 0.7s ease 0.2s forwards;
+    }
+
+    h1 em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--amber) 0%, var(--horizon) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2.5vw, 1.2rem);
+      font-weight: 300;
+      color: var(--muted);
+      max-width: 520px;
+      margin: 0 auto 48px;
+      line-height: 1.7;
+      opacity: 0;
+      animation: fadeUp 0.7s ease 0.35s forwards;
+    }
+
+    /* ── EMAIL FORM ── */
+    .email-form {
+      display: flex;
+      gap: 10px;
+      max-width: 440px;
+      margin: 0 auto 16px;
+      opacity: 0;
+      animation: fadeUp 0.7s ease 0.45s forwards;
+    }
+
+    .email-input {
+      flex: 1;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 300;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .email-input::placeholder { color: var(--muted); }
+
+    .email-input:focus {
+      border-color: rgba(232, 68, 10, 0.5);
+      background: rgba(255,255,255,0.09);
+    }
+
+    .cta-btn {
+      background: linear-gradient(135deg, var(--horizon) 0%, #c73d09 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 24px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      box-shadow: 0 4px 24px rgba(232, 68, 10, 0.35);
+    }
+
+    .cta-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 32px rgba(232, 68, 10, 0.5);
+    }
+
+    .cta-btn:active { transform: translateY(0); }
+
+    .form-note {
+      font-size: 0.75rem;
+      color: var(--muted);
+      opacity: 0;
+      animation: fadeUp 0.7s ease 0.55s forwards;
+    }
+
+    /* ── SUCCESS STATE ── */
+    .success-msg {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      border-radius: 10px;
+      padding: 14px 24px;
+      max-width: 440px;
+      margin: 0 auto 16px;
+      color: #86efac;
+      font-size: 0.9rem;
+    }
+
+    .success-msg.show { display: flex; }
+
+    /* ── MOCK APP ── */
+    .mockup-wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 64px auto 0;
+      padding: 0 24px;
+      opacity: 0;
+      animation: fadeUp 0.9s ease 0.6s forwards;
+    }
+
+    .mockup-glow {
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 500px;
+      height: 300px;
+      background: radial-gradient(ellipse, rgba(232,68,10,0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .phone-frame {
+      position: relative;
+      z-index: 1;
+      background: #0d1520;
+      border: 1.5px solid rgba(255,255,255,0.1);
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(0,0,0,0.5),
+        0 40px 80px rgba(0,0,0,0.6),
+        0 0 120px rgba(232,68,10,0.06);
+      max-width: 360px;
+      margin: 0 auto;
+    }
+
+    .phone-notch {
+      background: #0a0f1e;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .phone-notch-pill {
+      width: 80px;
+      height: 10px;
+      background: #1a1a2e;
+      border-radius: 100px;
+    }
+
+    /* ── APP UI MOCKUP ── */
+    .app-ui {
+      padding: 16px;
+    }
+
+    /* Search bar */
+    .app-search {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+    }
+
+    .search-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.8rem;
+    }
+
+    .search-row + .search-row {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .search-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .dot-green { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+    .dot-red   { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+
+    .search-label { color: var(--muted); font-size: 0.7rem; }
+    .search-value { color: var(--text); font-weight: 400; }
+
+    .depart-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .depart-label { color: var(--muted); font-size: 0.7rem; }
+    .depart-value {
+      font-size: 0.75rem;
+      color: var(--amber);
+      font-weight: 500;
+      background: rgba(245, 158, 11, 0.1);
+      padding: 3px 10px;
+      border-radius: 100px;
+    }
+
+    /* Map */
+    .app-map {
+      border-radius: 12px;
+      overflow: hidden;
+      height: 200px;
+      background: #0e1d33;
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    /* Road grid */
+    .map-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 30px 30px;
+    }
+
+    /* Route SVG */
+    .map-route {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Weather pins */
+    .map-pin {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      transform: translateX(-50%);
+    }
+
+    .pin-bubble {
+      background: rgba(10, 15, 30, 0.85);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      padding: 4px 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.65rem;
+      white-space: nowrap;
+      backdrop-filter: blur(8px);
+    }
+
+    .pin-temp { color: var(--text); font-weight: 500; }
+    .pin-stem {
+      width: 1.5px;
+      height: 8px;
+      background: rgba(255,255,255,0.2);
+    }
+    .pin-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,0.3);
+    }
+
+    /* Map labels */
+    .map-label {
+      position: absolute;
+      font-size: 0.6rem;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* ── TIMELINE STRIP ── */
+    .timeline-strip {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .timeline-label {
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .timeline-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 2px;
+    }
+
+    .timeline-scroll::-webkit-scrollbar { display: none; }
+
+    .timeline-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+      min-width: 48px;
+    }
+
+    .tl-time {
+      font-size: 0.6rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .tl-icon { font-size: 1.1rem; line-height: 1; }
+
+    .tl-temp {
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .tl-bar {
+      width: 100%;
+      height: 3px;
+      border-radius: 100px;
+    }
+
+    /* ── ROUTE LINE COLORS ── */
+    .tl-bar.clear  { background: var(--green); }
+    .tl-bar.wind   { background: var(--yellow); }
+    .tl-bar.rain   { background: var(--orange); }
+    .tl-bar.snow   { background: var(--red); }
+
+    .tl-item-active .tl-time { color: var(--amber); }
+
+    /* ── FEATURES ── */
+    .features {
+      position: relative;
+      z-index: 1;
+      padding: 100px 24px 80px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .features-eyebrow {
+      text-align: center;
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 48px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .feature-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 28px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .feature-card:hover {
+      background: rgba(255,255,255,0.07);
+      border-color: rgba(255,255,255,0.13);
+    }
+
+    .feature-icon {
+      font-size: 1.8rem;
+      margin-bottom: 14px;
+      display: block;
+    }
+
+    .feature-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .feature-desc {
+      font-size: 0.875rem;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    /* ── SOCIAL PROOF ── */
+    .proof {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 40px 24px 100px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .proof-number {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(3rem, 8vw, 5rem);
+      background: linear-gradient(135deg, var(--amber), var(--horizon));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .proof-label {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    /* ── BOTTOM CTA ── */
+    .bottom-cta {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 60px 24px 80px;
+      border-top: 1px solid var(--card-border);
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .bottom-cta h2 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .bottom-cta p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 36px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 24px;
+      color: var(--muted);
+      font-size: 0.75rem;
+      opacity: 0.6;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      nav { padding: 20px 24px; }
+      h1 { font-size: 2.4rem; }
+      .email-form { flex-direction: column; }
+      .cta-btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sky-bg"></div>
+  <div class="stars"></div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="logo">
+      <span class="logo-dot"></span>
+      Routecast
+    </div>
+    <span class="nav-badge">Coming Soon</span>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-eyebrow">Pre-trip weather intelligence</div>
+    <h1>Know what's ahead<br>before you <em>leave.</em></h1>
+    <p class="hero-sub">
+      See the exact weather on every mile of your drive — timed to when you'll actually be there. No surprises. No detours you didn't plan for.
+    </p>
+
+    <div class="email-form" id="emailForm">
+      <input
+        class="email-input"
+        type="email"
+        placeholder="your@email.com"
+        id="emailInput"
+        autocomplete="email"
+      />
+      <button class="cta-btn" onclick="handleSubmit()">Get Early Access</button>
+    </div>
+
+    <div class="success-msg" id="successMsg">
+      <span>✓</span>
+      <span>You're on the list. We'll reach out when Routecast is ready.</span>
+    </div>
+
+    <p class="form-note">iOS first. Free to start. No spam, ever.</p>
+  </section>
+
+  <!-- MOCKUP -->
+  <div class="mockup-wrap">
+    <div class="mockup-glow"></div>
+    <div class="phone-frame">
+      <div class="phone-notch"><div class="phone-notch-pill"></div></div>
+      <div class="app-ui">
+
+        <!-- Search -->
+        <div class="app-search">
+          <div class="search-row">
+            <span class="search-dot dot-green"></span>
+            <span>
+              <div class="search-label">From</div>
+              <div class="search-value">Denver, CO</div>
+            </span>
+          </div>
+          <div class="search-row">
+            <span class="search-dot dot-red"></span>
+            <span>
+              <div class="search-label">To</div>
+              <div class="search-value">Aspen, CO</div>
+            </span>
+          </div>
+          <div class="depart-row">
+            <span class="depart-label">Leaving</span>
+            <span class="depart-value">Today · 2:00 PM</span>
+          </div>
+        </div>
+
+        <!-- Map -->
+        <div class="app-map">
+          <div class="map-grid"></div>
+
+          <!-- SVG route line colored by condition -->
+          <svg class="map-route" viewBox="0 0 360 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="routeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%"   stop-color="#22c55e" />
+                <stop offset="40%"  stop-color="#22c55e" />
+                <stop offset="55%"  stop-color="#eab308" />
+                <stop offset="70%"  stop-color="#f97316" />
+                <stop offset="85%"  stop-color="#ef4444" />
+                <stop offset="100%" stop-color="#ef4444" />
+              </linearGradient>
+            </defs>
+            <!-- Route path -->
+            <path
+              d="M 30 160 C 80 155, 100 140, 130 120 C 160 100, 170 95, 200 85 C 230 75, 260 70, 290 55 C 310 45, 325 38, 340 30"
+              stroke="url(#routeGrad)"
+              stroke-width="3.5"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              opacity="0.9"
+            />
+            <!-- Road beneath -->
+            <path
+              d="M 30 160 C 80 155, 100 140, 130 120 C 160 100, 170 95, 200 85 C 230 75, 260 70, 290 55 C 310 45, 325 38, 340 30"
+              stroke="rgba(255,255,255,0.06)"
+              stroke-width="6"
+              fill="none"
+              stroke-linecap="round"
+            />
+          </svg>
+
+          <!-- Weather pins -->
+          <div class="map-pin" style="left: 9%; top: 58%;">
+            <div class="pin-bubble">
+              <span>☀️</span>
+              <span class="pin-temp">72°</span>
+            </div>
+            <div class="pin-stem"></div>
+            <div class="pin-dot" style="background:#22c55e; border-color:#22c55e;"></div>
+          </div>
+
+          <div class="map-pin" style="left: 40%; top: 32%;">
+            <div class="pin-bubble">
+              <span>🌬️</span>
+              <span class="pin-temp">58°</span>
+            </div>
+            <div class="pin-stem"></div>
+            <div class="pin-dot" style="background:#eab308; border-color:#eab308;"></div>
+          </div>
+
+          <div class="map-pin" style="left: 72%; top: 18%;">
+            <div class="pin-bubble">
+              <span>🌨️</span>
+              <span class="pin-temp">31°</span>
+            </div>
+            <div class="pin-stem"></div>
+            <div class="pin-dot" style="background:#ef4444; border-color:#ef4444;"></div>
+          </div>
+
+          <!-- Map labels -->
+          <div class="map-label" style="left: 12px; bottom: 12px;">Denver</div>
+          <div class="map-label" style="right: 12px; top: 12px;">Aspen</div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="timeline-strip">
+          <div class="timeline-label">Conditions along your route</div>
+          <div class="timeline-scroll">
+
+            <div class="timeline-item">
+              <span class="tl-time">2:00</span>
+              <span class="tl-icon">☀️</span>
+              <span class="tl-temp">72°</span>
+              <div class="tl-bar clear"></div>
+            </div>
+
+            <div class="timeline-item">
+              <span class="tl-time">2:30</span>
+              <span class="tl-icon">🌤️</span>
+              <span class="tl-temp">69°</span>
+              <div class="tl-bar clear"></div>
+            </div>
+
+            <div class="timeline-item tl-item-active">
+              <span class="tl-time">3:00</span>
+              <span class="tl-icon">🌬️</span>
+              <span class="tl-temp">61°</span>
+              <div class="tl-bar wind"></div>
+            </div>
+
+            <div class="timeline-item">
+              <span class="tl-time">3:30</span>
+              <span class="tl-icon">🌧️</span>
+              <span class="tl-temp">54°</span>
+              <div class="tl-bar rain"></div>
+            </div>
+
+            <div class="timeline-item">
+              <span class="tl-time">4:00</span>
+              <span class="tl-icon">🌨️</span>
+              <span class="tl-temp">38°</span>
+              <div class="tl-bar snow"></div>
+            </div>
+
+            <div class="timeline-item">
+              <span class="tl-time">4:30</span>
+              <span class="tl-icon">❄️</span>
+              <span class="tl-temp">31°</span>
+              <div class="tl-bar snow"></div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <section class="features">
+    <div class="features-eyebrow">Why Routecast</div>
+    <div class="features-grid">
+
+      <div class="feature-card">
+        <span class="feature-icon">🕐</span>
+        <div class="feature-title">Time-shifted forecasts</div>
+        <p class="feature-desc">Weather shown for when you'll actually be at each point on your route — not what's happening right now.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon">🗺️</span>
+        <div class="feature-title">Color-coded route line</div>
+        <p class="feature-desc">Green to red, mile by mile. You see at a glance exactly where conditions change — before you ever leave.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon">🏔️</span>
+        <div class="feature-title">Built for real drives</div>
+        <p class="feature-desc">Mountain passes, desert highways, coastal routes. Routecast samples conditions intelligently across your entire trip.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon">🔗</span>
+        <div class="feature-title">Share before you go</div>
+        <p class="feature-desc">Send a link to family so they can see what you'll drive through. One tap, no app required to view.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- BOTTOM CTA -->
+  <div class="bottom-cta">
+    <h2>Get early access</h2>
+    <p>We're launching on iOS soon. Join the waitlist and be first to know.</p>
+
+    <div class="email-form" id="emailForm2">
+      <input
+        class="email-input"
+        type="email"
+        placeholder="your@email.com"
+        id="emailInput2"
+        autocomplete="email"
+      />
+      <button class="cta-btn" onclick="handleSubmit2()">Join Waitlist</button>
+    </div>
+
+    <div class="success-msg" id="successMsg2">
+      <span>✓</span>
+      <span>You're on the list. We'll be in touch.</span>
+    </div>
+  </div>
+
+  <footer>
+    © 2026 Routecast · Made for road trippers ·
+    <a href="/privacy" style="color: inherit; opacity: 0.7;">Privacy Policy</a> ·
+    <a href="/terms" style="color: inherit; opacity: 0.7;">Terms of Service</a>
+  </footer>
+
+  <script>
+    // Simple email capture — swap this for your actual backend / Mailchimp / Loops etc.
+    function handleSubmit() {
+      const email = document.getElementById('emailInput').value.trim();
+      if (!email || !email.includes('@')) {
+        document.getElementById('emailInput').focus();
+        document.getElementById('emailInput').style.borderColor = 'rgba(239,68,68,0.5)';
+        setTimeout(() => {
+          document.getElementById('emailInput').style.borderColor = '';
+        }, 1200);
+        return;
+      }
+      document.getElementById('emailForm').style.display = 'none';
+      document.getElementById('successMsg').classList.add('show');
+      logEmail(email);
+    }
+
+    function handleSubmit2() {
+      const email = document.getElementById('emailInput2').value.trim();
+      if (!email || !email.includes('@')) {
+        document.getElementById('emailInput2').focus();
+        return;
+      }
+      document.getElementById('emailForm2').style.display = 'none';
+      document.getElementById('successMsg2').classList.add('show');
+      logEmail(email);
+    }
+
+    function logEmail(email) {
+      // TODO: replace with your email capture service
+      // Loops: POST https://app.loops.so/api/v1/contacts/create
+      // Mailchimp: POST to your audience endpoint
+      // Or just log it for now during validation
+      console.log('Captured:', email);
+    }
+
+    // Enter key support
+    document.getElementById('emailInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleSubmit();
+    });
+
+    document.getElementById('emailInput2').addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleSubmit2();
+    });
+  </script>
+
+</body>
+</html>
