@@ -1,0 +1,12 @@
+{
+  "origin": "La Vernia",
+  "destination": "Midland",
+  "miles": 349,
+  "drivingMinutes": 376,
+  "geometryPoints": 3620,
+  "samples": 8,
+  "availableForecasts": 8,
+  "departure": "2026-11-14T16:00:00.000Z",
+  "fetchedAt": "2026-11-14T15:58:17.173Z",
+  "liveMapTilesLoaded": false
+}
