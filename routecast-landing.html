@@ -4,9 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Routecast — See the weather on your drive before you leave</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -653,305 +652,23 @@
       .cta-btn { width: 100%; }
     }
   </style>
-</head>
-<body>
-
-  <div class="sky-bg"></div>
+</head><body>
   <div class="stars"></div>
-
-  <!-- NAV -->
-  <nav>
-    <div class="logo">
-      <span class="logo-dot"></span>
-      Routecast
-    </div>
-    <span class="nav-badge">Coming Soon</span>
-  </nav>
-
-  <!-- HERO -->
+  <nav><div class="logo"><span class="logo-dot"></span>Routecast</div><span class="nav-badge">Web development preview</span></nav>
   <section class="hero">
-    <div class="hero-eyebrow">Pre-trip weather intelligence</div>
+    <div class="hero-eyebrow">Plan before you drive</div>
     <h1>Know what's ahead<br>before you <em>leave.</em></h1>
-    <p class="hero-sub">
-      See the exact weather on every mile of your drive — timed to when you'll actually be there. No surprises. No detours you didn't plan for.
-    </p>
-
-    <div class="email-form" id="emailForm">
-      <input
-        class="email-input"
-        type="email"
-        placeholder="your@email.com"
-        id="emailInput"
-        autocomplete="email"
-      />
-      <button class="cta-btn" onclick="handleSubmit()">Get Early Access</button>
-    </div>
-
-    <div class="success-msg" id="successMsg">
-      <span>✓</span>
-      <span>You're on the list. We'll reach out when Routecast is ready.</span>
-    </div>
-
-    <p class="form-note">iOS first. Free to start. No spam, ever.</p>
+    <p class="hero-sub">Explore forecasts at sampled points along a driving route, timed to your estimated arrival. Start with two cities and a departure time.</p>
+    <a class="cta-btn" href="/" style="display:inline-block;text-decoration:none">Open the web planner ↗</a>
+    <p class="form-note">Private development preview. Local setup required for live lookups. No email signup.</p>
   </section>
-
-  <!-- MOCKUP -->
-  <div class="mockup-wrap">
-    <div class="mockup-glow"></div>
-    <div class="phone-frame">
-      <div class="phone-notch"><div class="phone-notch-pill"></div></div>
-      <div class="app-ui">
-
-        <!-- Search -->
-        <div class="app-search">
-          <div class="search-row">
-            <span class="search-dot dot-green"></span>
-            <span>
-              <div class="search-label">From</div>
-              <div class="search-value">Denver, CO</div>
-            </span>
-          </div>
-          <div class="search-row">
-            <span class="search-dot dot-red"></span>
-            <span>
-              <div class="search-label">To</div>
-              <div class="search-value">Aspen, CO</div>
-            </span>
-          </div>
-          <div class="depart-row">
-            <span class="depart-label">Leaving</span>
-            <span class="depart-value">Today · 2:00 PM</span>
-          </div>
-        </div>
-
-        <!-- Map -->
-        <div class="app-map">
-          <div class="map-grid"></div>
-
-          <!-- SVG route line colored by condition -->
-          <svg class="map-route" viewBox="0 0 360 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="routeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%"   stop-color="#22c55e" />
-                <stop offset="40%"  stop-color="#22c55e" />
-                <stop offset="55%"  stop-color="#eab308" />
-                <stop offset="70%"  stop-color="#f97316" />
-                <stop offset="85%"  stop-color="#ef4444" />
-                <stop offset="100%" stop-color="#ef4444" />
-              </linearGradient>
-            </defs>
-            <!-- Route path -->
-            <path
-              d="M 30 160 C 80 155, 100 140, 130 120 C 160 100, 170 95, 200 85 C 230 75, 260 70, 290 55 C 310 45, 325 38, 340 30"
-              stroke="url(#routeGrad)"
-              stroke-width="3.5"
-              fill="none"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              opacity="0.9"
-            />
-            <!-- Road beneath -->
-            <path
-              d="M 30 160 C 80 155, 100 140, 130 120 C 160 100, 170 95, 200 85 C 230 75, 260 70, 290 55 C 310 45, 325 38, 340 30"
-              stroke="rgba(255,255,255,0.06)"
-              stroke-width="6"
-              fill="none"
-              stroke-linecap="round"
-            />
-          </svg>
-
-          <!-- Weather pins -->
-          <div class="map-pin" style="left: 9%; top: 58%;">
-            <div class="pin-bubble">
-              <span>☀️</span>
-              <span class="pin-temp">72°</span>
-            </div>
-            <div class="pin-stem"></div>
-            <div class="pin-dot" style="background:#22c55e; border-color:#22c55e;"></div>
-          </div>
-
-          <div class="map-pin" style="left: 40%; top: 32%;">
-            <div class="pin-bubble">
-              <span>🌬️</span>
-              <span class="pin-temp">58°</span>
-            </div>
-            <div class="pin-stem"></div>
-            <div class="pin-dot" style="background:#eab308; border-color:#eab308;"></div>
-          </div>
-
-          <div class="map-pin" style="left: 72%; top: 18%;">
-            <div class="pin-bubble">
-              <span>🌨️</span>
-              <span class="pin-temp">31°</span>
-            </div>
-            <div class="pin-stem"></div>
-            <div class="pin-dot" style="background:#ef4444; border-color:#ef4444;"></div>
-          </div>
-
-          <!-- Map labels -->
-          <div class="map-label" style="left: 12px; bottom: 12px;">Denver</div>
-          <div class="map-label" style="right: 12px; top: 12px;">Aspen</div>
-        </div>
-
-        <!-- Timeline -->
-        <div class="timeline-strip">
-          <div class="timeline-label">Conditions along your route</div>
-          <div class="timeline-scroll">
-
-            <div class="timeline-item">
-              <span class="tl-time">2:00</span>
-              <span class="tl-icon">☀️</span>
-              <span class="tl-temp">72°</span>
-              <div class="tl-bar clear"></div>
-            </div>
-
-            <div class="timeline-item">
-              <span class="tl-time">2:30</span>
-              <span class="tl-icon">🌤️</span>
-              <span class="tl-temp">69°</span>
-              <div class="tl-bar clear"></div>
-            </div>
-
-            <div class="timeline-item tl-item-active">
-              <span class="tl-time">3:00</span>
-              <span class="tl-icon">🌬️</span>
-              <span class="tl-temp">61°</span>
-              <div class="tl-bar wind"></div>
-            </div>
-
-            <div class="timeline-item">
-              <span class="tl-time">3:30</span>
-              <span class="tl-icon">🌧️</span>
-              <span class="tl-temp">54°</span>
-              <div class="tl-bar rain"></div>
-            </div>
-
-            <div class="timeline-item">
-              <span class="tl-time">4:00</span>
-              <span class="tl-icon">🌨️</span>
-              <span class="tl-temp">38°</span>
-              <div class="tl-bar snow"></div>
-            </div>
-
-            <div class="timeline-item">
-              <span class="tl-time">4:30</span>
-              <span class="tl-icon">❄️</span>
-              <span class="tl-temp">31°</span>
-              <div class="tl-bar snow"></div>
-            </div>
-
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- FEATURES -->
   <section class="features">
-    <div class="features-eyebrow">Why Routecast</div>
     <div class="features-grid">
-
-      <div class="feature-card">
-        <span class="feature-icon">🕐</span>
-        <div class="feature-title">Time-shifted forecasts</div>
-        <p class="feature-desc">Weather shown for when you'll actually be at each point on your route — not what's happening right now.</p>
-      </div>
-
-      <div class="feature-card">
-        <span class="feature-icon">🗺️</span>
-        <div class="feature-title">Color-coded route line</div>
-        <p class="feature-desc">Green to red, mile by mile. You see at a glance exactly where conditions change — before you ever leave.</p>
-      </div>
-
-      <div class="feature-card">
-        <span class="feature-icon">🏔️</span>
-        <div class="feature-title">Built for real drives</div>
-        <p class="feature-desc">Mountain passes, desert highways, coastal routes. Routecast samples conditions intelligently across your entire trip.</p>
-      </div>
-
-      <div class="feature-card">
-        <span class="feature-icon">🔗</span>
-        <div class="feature-title">Share before you go</div>
-        <p class="feature-desc">Send a link to family so they can see what you'll drive through. One tap, no app required to view.</p>
-      </div>
-
+      <div class="feature-card"><h3>Your route, your departure</h3><p>Choose city centers and a local departure time. View an estimated driving route and arrival-time forecasts.</p></div>
+      <div class="feature-card"><h3>A forecast along the way</h3><p>Up to eight weather samples show temperature, precipitation probability and wind. Gaps and unavailable forecasts are labeled.</p></div>
+      <div class="feature-card"><h3>Web first</h3><p>The first version runs in your browser. Accounts, subscriptions, route sharing and native apps are not available.</p></div>
     </div>
   </section>
-
-  <!-- BOTTOM CTA -->
-  <div class="bottom-cta">
-    <h2>Get early access</h2>
-    <p>We're launching on iOS soon. Join the waitlist and be first to know.</p>
-
-    <div class="email-form" id="emailForm2">
-      <input
-        class="email-input"
-        type="email"
-        placeholder="your@email.com"
-        id="emailInput2"
-        autocomplete="email"
-      />
-      <button class="cta-btn" onclick="handleSubmit2()">Join Waitlist</button>
-    </div>
-
-    <div class="success-msg" id="successMsg2">
-      <span>✓</span>
-      <span>You're on the list. We'll be in touch.</span>
-    </div>
-  </div>
-
-  <footer>
-    © 2026 Routecast · Made for road trippers ·
-    <a href="/privacy" style="color: inherit; opacity: 0.7;">Privacy Policy</a> ·
-    <a href="/terms" style="color: inherit; opacity: 0.7;">Terms of Service</a>
-  </footer>
-
-  <script>
-    // Simple email capture — swap this for your actual backend / Mailchimp / Loops etc.
-    function handleSubmit() {
-      const email = document.getElementById('emailInput').value.trim();
-      if (!email || !email.includes('@')) {
-        document.getElementById('emailInput').focus();
-        document.getElementById('emailInput').style.borderColor = 'rgba(239,68,68,0.5)';
-        setTimeout(() => {
-          document.getElementById('emailInput').style.borderColor = '';
-        }, 1200);
-        return;
-      }
-      document.getElementById('emailForm').style.display = 'none';
-      document.getElementById('successMsg').classList.add('show');
-      logEmail(email);
-    }
-
-    function handleSubmit2() {
-      const email = document.getElementById('emailInput2').value.trim();
-      if (!email || !email.includes('@')) {
-        document.getElementById('emailInput2').focus();
-        return;
-      }
-      document.getElementById('emailForm2').style.display = 'none';
-      document.getElementById('successMsg2').classList.add('show');
-      logEmail(email);
-    }
-
-    function logEmail(email) {
-      // TODO: replace with your email capture service
-      // Loops: POST https://app.loops.so/api/v1/contacts/create
-      // Mailchimp: POST to your audience endpoint
-      // Or just log it for now during validation
-      console.log('Captured:', email);
-    }
-
-    // Enter key support
-    document.getElementById('emailInput').addEventListener('keydown', e => {
-      if (e.key === 'Enter') handleSubmit();
-    });
-
-    document.getElementById('emailInput2').addEventListener('keydown', e => {
-      if (e.key === 'Enter') handleSubmit2();
-    });
-  </script>
-
-</body>
-</html>
+  <section class="bottom-cta"><h2>A look ahead. Not a guarantee.</h2><p>Pre-trip planning only. Forecasts and travel times are estimates. Check official weather and road advisories before leaving. The current public API configuration is for private noncommercial evaluation only.</p></section>
+  <footer><span>Routecast</span><span><a href="privacy-policy.html">Privacy</a> · <a href="terms-of-service.html">Terms</a></span></footer>
+</body></html>

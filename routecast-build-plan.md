@@ -1,3 +1,7 @@
+> **Historical roadmap — superseded for the first working preview (2026-11-14).**
+> Read README.md and PROVIDERS.md for the implementation and current provider policies.
+> The Google Directions + Mapbox combination below is not implemented. Open-Meteo's hosted free API is noncommercial and rate limited, not unlimited free commercial access. Pricing, sharing, storage, auth and deployment ideas below remain unimplemented. This document is retained as planning history.
+
 # Routecast — Claude Code Build Plan
 
 > Hand this document to Claude Code at the start of every session.
